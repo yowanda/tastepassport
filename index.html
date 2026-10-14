@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TastePassport — Same city. Different trip.</title>
+<style>
+:root{--ink:#1a1611;--muted:#6b6259;--paper:#faf6ef;--card:#fff;--line:#e8ddcd;--accent:#e8542f;--accent2:#0e7c6b;--gold:#c99a2b;--soft:#f3ecdf;--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
+a{color:inherit}
+header{max-width:1080px;margin:0 auto;padding:28px 20px 8px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.logo{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.logo span{color:var(--accent)}
+.tagline{color:var(--muted);font-size:14px;margin:4px 0 0;max-width:520px}
+.badge{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--card);white-space:nowrap}
+.badge.live{border-color:var(--accent2);color:var(--accent2);font-weight:700}
+main{max-width:1080px;margin:0 auto;padding:12px 20px 60px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:16px 0}
+.step h2{margin:0 0 4px;font-size:18px}
+.step p.hint{margin:0 0 14px;color:var(--muted);font-size:13px}
+.mode-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.mode-btn{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer}
+.mode-btn.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.chip-group{margin:12px 0}
+.chip-group h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--soft);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--ink)}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.preset{border:1px dashed var(--gold);background:#fffaf0;border-radius:10px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:600}
+.preset:hover{background:#fff2d6}
+.favbar{margin-top:12px;font-size:14px}
+.favbar b{color:var(--accent)}
+.cities{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:640px){.cities{grid-template-columns:repeat(2,1fr)}}
+.city{border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;background:var(--card);text-align:left;transition:.15s}
+.city:hover{border-color:var(--ink)}
+.city.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,84,47,.15)}
+.city .emoji{font-size:28px}
+.city .name{font-weight:700;font-size:16px;margin-top:6px}
+.city .sub{font-size:12px;color:var(--muted)}
+.generate{width:100%;margin:20px 0 4px;padding:16px;border:0;border-radius:14px;background:var(--ink);color:#fff;font-size:17px;font-weight:700;cursor:pointer}
+.generate:hover{background:var(--accent)}
+.generate:disabled{opacity:.45;cursor:not-allowed}
+.dna{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.dna span{background:#1a1611;color:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600}
+.dna .lbl{background:none;color:var(--muted);padding:5px 0;font-weight:400}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.compare-grid{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);overflow:hidden}
+.panel.generic{opacity:.92}
+.panel-head{padding:14px 16px;font-weight:800;font-size:15px;border-bottom:1px solid var(--line)}
+.panel-head small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.panel.taste .panel-head{background:#fff3ee;border-bottom-color:#f2c9b8}
+.panel.generic .panel-head{background:#f4f1ea}
+.panel.profileA .panel-head{background:#eef6f2;border-bottom-color:#c9e2d8}
+.panel.profileB .panel-head{background:#f3eef9;border-bottom-color:#ddd0ec}
+.block{padding:14px 16px;border-bottom:1px solid var(--line)}
+.block:last-child{border-bottom:0}
+.block .when{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700}
+.block .place{font-size:16px;font-weight:700;margin:2px 0}
+.block .meta{font-size:12px;color:var(--muted)}
+.block .why{font-size:13.5px;margin-top:6px;background:var(--soft);border-left:3px solid var(--accent);padding:8px 10px;border-radius:0 8px 8px 0}
+.block .why b{color:var(--accent)}
+.entity{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;background:#eef1f5;color:#3d4a5c;margin-top:6px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:1.5px solid var(--ink);background:var(--card);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.btn:hover{opacity:.9}
+.compare-profiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+@media(max-width:640px){.compare-profiles{grid-template-columns:1fr}}
+.cmp-box{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--soft)}
+.cmp-box label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.cmp-box select{width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1px solid var(--line);font-size:14px;background:#fff}
+.settings{margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
+.settings h3{margin:0 0 6px;font-size:15px}
+.settings p{margin:0 0 10px;color:var(--muted);font-size:13px}
+.settings input{width:100%;max-width:520px;padding:11px;border:1.5px solid var(--line);border-radius:10px;font-size:14px}
+.settings .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.note{font-size:12.5px;color:var(--muted);margin-top:14px}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;z-index:99}
+footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo">Taste<span>Passport</span> ✈️</div>
+    <p class="tagline">Same city. Different trip. Because taste travels. A generic itinerary ignores who you are — TastePassport grounds your day in your taste graph.</p>
+  </div>
+  <span class="badge" id="data-badge">DEMO DATA · no key needed</span>
+</header>
+<main>
+  <section class="step" id="step1">
+    <h2>Step 1 — Your taste</h2>
+    <p class="hint">Tap 3–5 favorites. One tap on a preset works too.</p>
+    <div class="mode-row">
+      <button class="mode-btn on" id="mode-single" type="button">Single profile</button>
+      <button class="mode-btn" id="mode-compare" type="button">Compare two tastes</button>
+    </div>
+    <div id="single-ui">
+      <div id="chip-groups"></div>
+      <div class="presets">
+        <button class="preset" type="button" data-preset="indie">🎬 Indie film lover</button>
+        <button class="preset" type="button" data-preset="street">🍜 Street food hunter</button>
+        <button class="preset" type="button" data-preset="minimal">🪴 Minimalist</button>
+        <button class="preset" type="button" data-preset="night">🌙 Night owl</button>
+        <button class="preset" type="button" data-preset="clear">✕ Clear</button>
+      </div>
+      <div class="favbar" id="favbar">Selected: <b>none yet</b></div>
+    </div>
+    <div id="compare-ui" class="hidden">
+      <div class="compare-profiles">
+        <div class="cmp-box"><label>Profile A</label><select id="profile-a"></select></div>
+        <div class="cmp-box"><label>Profile B</label><select id="profile-b"></select></div>
+      </div>
+      <p class="hint">Each profile is a taste persona. Generate to see two different trips for the same city.</p>
+    </div>
+  </section>
+
+  <section class="step" id="step2">
+    <h2>Step 2 — Destination</h2>
+    <p class="hint">Pick a city. Same city, different trip — depending on taste.</p>
+    <div class="cities" id="cities"></div>
+  </section>
+
+  <button class="generate" id="generate" type="button" disabled>Generate my 1-day trip →</button>
+
+  <section id="results" class="hidden">
+    <h2 id="results-title" style="font-size:20px;margin:26px 0 4px"></h2>
+    <p id="results-sub" style="color:var(--muted);margin:0 0 6px;font-size:14px"></p>
+    <div id="dna-wrap"></div>
+    <div class="compare-grid" id="compare-grid"></div>
+    <div class="actions">
+      <button class="btn primary" id="copy-btn" type="button">📋 Copy itinerary</button>
+      <button class="btn" id="regen-btn" type="button">↻ Regenerate</button>
+    </div>
+  </section>
+
+  <section class="settings">
+    <h3>🔑 Qloo LIVE mode (optional)</h3>
+    <p>Paste a Qloo API key to ground recommendations in live Qloo taste data. Stored only in this browser's localStorage. It is sent only to hackathon.api.qloo.com. Leave blank for DEMO mode — the app works fully offline with curated data.</p>
+    <input id="api-key" type="password" placeholder="Qloo API key (optional)" autocomplete="off">
+    <div class="row">
+      <button class="btn" id="save-key" type="button">Save key</button>
+      <button class="btn" id="clear-key" type="button">Clear key</button>
+      <span id="key-status" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+    <p class="note">Demo data is curated from real-world venues and taste associations for judging purposes. LIVE mode queries Qloo <code>/v2/insights</code> (places, movies, artists, brands) and falls back to demo data on any error.</p>
+  </section>
+</main>
+<footer>TastePassport · Hackathon demo · Demo data is curated for offline judging. Qloo is a trademark of its owner; this demo is not affiliated with Qloo.</footer>
+<div class="toast hidden" id="toast"></div>
+<script>
+/* ---------- DATA (curated demo dataset: 10 recs per city = 40) ---------- */
+const FAVORITES = [
+  {cat:"🎵 Music", items:[
+    {name:"Radiohead", tags:["indie","alternative","melancholic"]},
+    {name:"Miles Davis", tags:["jazz","vinyl","late-night"]},
+    {name:"Björk", tags:["experimental","avant-garde","electronic"]},
+    {name:"Kraftwerk", tags:["electronic","techno","nightlife"]},
+    {name:"BTS", tags:["k-pop","pop","energetic"]},
+    {name:"Beyoncé", tags:["pop","rnb","glam"]},
+  ]},
+  {cat:"🎬 Film", items:[
+    {name:"Studio Ghibli", tags:["anime","whimsical","nostalgic"]},
+    {name:"Wes Anderson", tags:["quirky","pastel","indie-film"]},
+    {name:"Kurosawa", tags:["cinema","classic","samurai"]},
+    {name:"Wong Kar-wai", tags:["cinema","moody","neon"]},
+  ]},
+  {cat:"🍜 Food", items:[
+    {name:"Ramen", tags:["ramen","japanese","comfort"]},
+    {name:"Sushi", tags:["japanese","minimal","omakase"]},
+    {name:"Street food", tags:["street-food","spicy","casual"]},
+    {name:"Espresso", tags:["coffee","cafe","slow"]},
+  ]},
+  {cat:"👟 Brands & Style", items:[
+    {name:"Nike", tags:["streetwear","sporty","sneakers"]},
+    {name:"Muji", tags:["minimal","design","calm"]},
+    {name:"Vintage", tags:["vintage","retro","thrift"]},
+    {name:"Vinyl", tags:["vinyl","analog","record-store"]},
+  ]},
+];
+const PRESETS = {
+  indie:  {label:"Indie film lover", favs:["Studio Ghibli","Wes Anderson","Vinyl","Espresso"]},
+  street:{label:"Street food hunter", favs:["Street food","Ramen","Nike","Kraftwerk"]},
+  minimal:{label:"Minimalist", favs:["Muji","Sushi","Espresso","Miles Davis"]},
+  night: {label:"Night owl", favs:["Kraftwerk","Björk","Miles Davis","Street food"]},
+};
+const CITIES = [
+  {id:"tokyo", name:"Tokyo", emoji:"🗼", sub:"Neon, ramen & record bars"},
+  {id:"paris", name:"Paris", emoji:"🗼", sub:"Cafés, cinema & vintage"},
+  {id:"newyork", name:"New York", emoji:"🗽", sub:"Jazz, streetwear & pizza"},
+  {id:"jakarta", name:"Jakarta", emoji:"🏙️", sub:"Street food & coffee"},
+];
+/* Each rec: kind, block, tags, why (taste reasoning), entity (Qloo type) */
+const RECS = {
+  tokyo: [
+    {name:"Kichijoji Ghibli Museum", kind:"culture", block:"morning", tags:["anime","whimsical","nostalgic"], why:"Studio Ghibli worlds, built at real scale — whimsy you can walk through.", entity:"place"},
+    {name:"Shimokitazawa vintage crawl", kind:"shopping", block:"afternoon", tags:["vintage","retro","thrift"], why:"Tokyo's thrift capital — retro finds stacked in tiny shops.", entity:"place"},
+    {name:"Disk Union Shinjuku (vinyl)", kind:"shopping", block:"afternoon", tags:["vinyl","analog","record-store"], why:"Floor after floor of analog crates for crate-diggers.", entity:"place"},
+    {name:"Ichiran Ramen, Shibuya", kind:"dining", block:"evening", tags:["ramen","japanese","comfort"], why:"Solo-ramen booths: pure comfort, zero small talk.", entity:"place"},
+    {name:"Tsukiji Outer Market", kind:"dining", block:"morning", tags:["street-food","japanese","casual"], why:"Graze your way through the market like a local.", entity:"place"},
+    {name:"teamLab Planets, Toyosu", kind:"culture", block:"afternoon", tags:["experimental","avant-garde","design"], why:"Immersive digital art that Björk would approve of.", entity:"place"},
+    {name:"Golden Gai, Shinjuku", kind:"nightlife", block:"evening", tags:["late-night","jazz","neon"], why:"Six-seat bars, vinyl on the speakers, stories till 2am.", entity:"place"},
+    {name:"Womb, Shibuya", kind:"nightlife", block:"evening", tags:["electronic","techno","nightlife"], why:"Tokyo techno institution — Kraftwerk-grade sound system.", entity:"place"},
+    {name:"Kiyosumi Garden + Muji", kind:"culture", block:"morning", tags:["minimal","design","calm"], why:"A quiet garden, then Muji's calm minimalism next door.", entity:"brand"},
+    {name:"Toho Cinemas, Shinjuku (Kurosawa retro)", kind:"culture", block:"afternoon", tags:["cinema","classic","samurai"], why:"Repertory screenings where Kurosawa still fills the room.", entity:"movie"},
+  ],
+  paris: [
+    {name:"Café de Flore, Saint-Germain", kind:"dining", block:"morning", tags:["coffee","cafe","slow"], why:"Espresso, people-watching, and a century of writers before you.", entity:"place"},
+    {name:"Le Marais vintage crawl", kind:"shopping", block:"afternoon", tags:["vintage","retro","thrift"], why:"Curated retro shops in the city's most walkable quarter.", entity:"place"},
+    {name:"Cinémathèque Française", kind:"culture", block:"afternoon", tags:["cinema","classic","indie-film"], why:"The temple of film history — Kurosawa to Wong Kar-wai.", entity:"place"},
+    {name:"La Recyclerie (record market)", kind:"shopping", block:"afternoon", tags:["vinyl","analog","record-store"], why:"Vinyl digging inside a former train station.", entity:"place"},
+    {name:"Marché des Enfants Rouges", kind:"dining", block:"morning", tags:["street-food","casual","spicy"], why:"Paris's oldest market — street food from five continents.", entity:"place"},
+    {name:"Fondation Louis Vuitton", kind:"culture", block:"morning", tags:["avant-garde","design","minimal"], why:"Gehry's glass ship — architecture as avant-garde sculpture.", entity:"place"},
+    {name:"Le Caveau de la Huchette (jazz)", kind:"nightlife", block:"evening", tags:["jazz","late-night","vinyl"], why:"A cave of swing and bebop — Miles would feel at home.", entity:"place"},
+    {name:"Rex Club (techno)", kind:"nightlife", block:"evening", tags:["electronic","techno","nightlife"], why:"Paris techno's basement HQ since the 90s.", entity:"place"},
+    {name:"Shakespeare and Company", kind:"culture", block:"morning", tags:["nostalgic","quirky","indie-film"], why:"Bookshop out of a Wes Anderson frame — cats included.", entity:"place"},
+    {name:"Nike Paris, Le Marais", kind:"shopping", block:"afternoon", tags:["streetwear","sporty","sneakers"], why:"Limited drops and streetwear in the heart of the Marais.", entity:"brand"},
+  ],
+  newyork: [
+    {name:"Blue Note Jazz Club", kind:"nightlife", block:"evening", tags:["jazz","late-night","vinyl"], why:"The room where jazz legends still play to 200 people.", entity:"place"},
+    {name:"Rough Trade NYC (vinyl)", kind:"shopping", block:"afternoon", tags:["vinyl","analog","record-store"], why:"Williamsburg's vinyl mecca — listening stations included.", entity:"place"},
+    {name:"Smorgasburg, Brooklyn", kind:"dining", block:"morning", tags:["street-food","casual","spicy"], why:"America's biggest weekly food market — graze everything.", entity:"place"},
+    {name:"Ippudo NY (ramen)", kind:"dining", block:"evening", tags:["ramen","japanese","comfort"], why:"The ramen that started NYC's tonkotsu obsession.", entity:"place"},
+    {name:"Museum of the Moving Image", kind:"culture", block:"afternoon", tags:["cinema","indie-film","quirky"], why:"Film craft, Muppets, and indie retrospectives under one roof.", entity:"place"},
+    {name:"The Met Cloisters", kind:"culture", block:"morning", tags:["classic","nostalgic","calm"], why:"Medieval quiet above the Hudson — a world away from Midtown.", entity:"place"},
+    {name:"Basement NY (techno)", kind:"nightlife", block:"evening", tags:["electronic","techno","nightlife"], why:"Proper underground techno under Queens.", entity:"place"},
+    {name:"Muji, Fifth Avenue", kind:"shopping", block:"afternoon", tags:["minimal","design","calm"], why:"Minimal design, tax-free calm, in the middle of Manhattan.", entity:"brand"},
+    {name:"Film Forum", kind:"culture", block:"afternoon", tags:["cinema","indie-film","classic"], why:"The repertory house where Kurosawa and Wong Kar-wai still play.", entity:"place"},
+    {name:"Kith, SoHo", kind:"shopping", block:"afternoon", tags:["streetwear","sneakers","sporty"], why:"Sneaker culture ground zero, plus a cereal bar.", entity:"brand"},
+  ],
+  jakarta: [
+    {name:"Pasar Santa (street food + vintage)", kind:"dining", block:"morning", tags:["street-food","casual","vintage"], why:"Old market, new energy — street food stalls beside thrift gems.", entity:"place"},
+    {name:"Giyanti Coffee Roastery", kind:"dining", block:"morning", tags:["coffee","cafe","slow"], why:"Slow-brewed single origin in a heritage house.", entity:"place"},
+    {name:"Kinosaurus (indie cinema)", kind:"culture", block:"afternoon", tags:["cinema","indie-film","quirky"], why:"Jakarta's indie-screening room — small, curated, beloved.", entity:"place"},
+    {name:"Pasar Baru vintage walk", kind:"shopping", block:"afternoon", tags:["vintage","retro","thrift"], why:"Colonial arcades full of retro finds and tailor shops.", entity:"place"},
+    {name:"Ramen Ya, Blok M", kind:"dining", block:"evening", tags:["ramen","japanese","comfort"], why:"Blok M's ramen row — steam, spice, and a perfect egg.", entity:"place"},
+    {name:"Jazzy night at Motion Blue", kind:"nightlife", block:"evening", tags:["jazz","late-night","vinyl"], why:"Intimate jazz in the Fairmont — Jakarta's Blue Note moment.", entity:"place"},
+    {name:"Mbloc Space (record + streetwear)", kind:"shopping", block:"afternoon", tags:["vinyl","analog","streetwear"], why:"Creative compound: vinyl, streetwear, coffee, gigs.", entity:"place"},
+    {name:"Sate Taichan Senayan", kind:"dining", block:"evening", tags:["street-food","spicy","casual"], why:"Spicy satay at midnight — the city's true night ritual.", entity:"place"},
+    {name:"Museum MACAN", kind:"culture", block:"afternoon", tags:["avant-garde","design","minimal"], why:"Contemporary art with a minimalist, global eye.", entity:"place"},
+    {name:"Zodiac, Barito (electronic)", kind:"nightlife", block:"evening", tags:["electronic","techno","nightlife"], why:"Jakarta's electronic music hub in a leafy south-side bar.", entity:"place"},
+  ],
+};
+const GENERIC = {
+  tokyo: [
+    {name:"Senso-ji Temple, Asakusa", kind:"culture", block:"morning", why:"Tokyo's oldest temple — every guidebook's first stop."},
+    {name:"Shibuya Crossing + Hachiko", kind:"culture", block:"afternoon", why:"The famous scramble crossing and the loyal dog statue."},
+    {name:"Tokyo Skytree", kind:"culture", block:"evening", why:"The tallest tower — sunset views over the whole city."},
+  ],
+  paris: [
+    {name:"Eiffel Tower", kind:"culture", block:"morning", why:"The icon. Queue, ascend, photograph."},
+    {name:"Louvre Museum", kind:"culture", block:"afternoon", why:"Mona Lisa + 35,000 more works in one palace."},
+    {name:"Seine River cruise", kind:"culture", block:"evening", why:"The classic one-hour boat ride past the landmarks."},
+  ],
+  newyork: [
+    {name:"Times Square", kind:"culture", block:"morning", why:"The neon crossroads — bright, loud, crowded."},
+    {name:"Central Park", kind:"culture", block:"afternoon", why:"The famous lawns, bridges and rowboats."},
+    {name:"Broadway show", kind:"culture", block:"evening", why:"A big-name musical in the Theater District."},
+  ],
+  jakarta: [
+    {name:"Monas (National Monument)", kind:"culture", block:"morning", why:"The city's landmark tower and history museum."},
+    {name:"Kota Tua (Old Town)", kind:"culture", block:"afternoon", why:"Colonial-era square, museums and bike rentals."},
+    {name:"Bundaran HI", kind:"culture", block:"evening", why:"The welcome statue roundabout — Jakarta's meeting point."},
+  ],
+};
+/* ---------- STATE ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+let selected = new Set();           // favorite names (single mode)
+let mode = "single";
+let cityId = null;
+let lastResult = null;              // {city, profiles:[{label,tags,trip}], generic}
+const FAV_BY_NAME = {};
+FAVORITES.forEach(g => g.items.forEach(f => FAV_BY_NAME[f.name] = f));
+
+/* ---------- RENDER: chips, presets, cities ---------- */
+function renderChips(){
+  $("#chip-groups").innerHTML = FAVORITES.map(g => `
+    <div class="chip-group"><h3>${g.cat}</h3><div class="chips">
+    ${g.items.map(f => `<button class="chip ${selected.has(f.name)?"sel":""}" data-fav="${f.name}" type="button">${f.name}</button>`).join("")}
+    </div></div>`).join("");
+  $$("#chip-groups .chip").forEach(c => c.onclick = () => {
+    const n = c.dataset.fav;
+    selected.has(n) ? selected.delete(n) : selected.add(n);
+    renderChips(); updateFavbar(); updateGenerate();
+  });
+}
+function updateFavbar(){
+  $("#favbar").innerHTML = "Selected: <b>" + (selected.size ? [...selected].join(", ") : "none yet") + "</b>";
+}
+function renderCities(){
+  $("#cities").innerHTML = CITIES.map(c => `
+    <button class="city ${cityId===c.id?"on":""}" data-city="${c.id}" type="button">
+      <div class="emoji">${c.emoji}</div><div class="name">${c.name}</div><div class="sub">${c.sub}</div>
+    </button>`).join("");
+  $$("#cities .city").forEach(b => b.onclick = () => { cityId = b.dataset.city; renderCities(); updateGenerate(); });
+}
+function renderCompareSelects(){
+  const opts = Object.entries(PRESETS).map(([k,p]) => `<option value="${k}">${p.label}</option>`).join("");
+  $("#profile-a").innerHTML = opts;
+  $("#profile-b").innerHTML = opts;
+  $("#profile-a").value = "indie";
+  $("#profile-b").value = "street";
+}
+function updateGenerate(){
+  const ok = cityId && (mode === "compare" || selected.size >= 1);
+  $("#generate").disabled = !ok;
+  $("#generate").textContent = mode === "compare" ? "Compare two trips →" : "Generate my 1-day trip →";
+}
+
+/* ---------- MODE SWITCH ---------- */
+$("#mode-single").onclick = () => { mode="single"; $("#mode-single").classList.add("on"); $("#mode-compare").classList.remove("on"); $("#single-ui").classList.remove("hidden"); $("#compare-ui").classList.add("hidden"); updateGenerate(); };
+$("#mode-compare").onclick = () => { mode="compare"; $("#mode-compare").classList.add("on"); $("#mode-single").classList.remove("on"); $("#compare-ui").classList.remove("hidden"); $("#single-ui").classList.add("hidden"); updateGenerate(); };
+$$(".preset").forEach(b => b.onclick = () => {
+  const p = b.dataset.preset;
+  if (p === "clear") { selected = new Set(); }
+  else { selected = new Set(PRESETS[p].favs); }
+  renderChips(); updateFavbar(); updateGenerate();
+});
+
+/* ---------- SCORING ---------- */
+function tagsForProfile(favs){
+  const tags = new Set();
+  favs.forEach(n => (FAV_BY_NAME[n]?.tags || []).forEach(t => tags.add(t)));
+  return [...tags];
+}
+function buildTrip(city, tags){
+  const scored = RECS[city].map((r,i) => ({...r, score: r.tags.filter(t => tags.includes(t)).length, i}));
+  const trip = [];
+  for (const block of ["morning","afternoon","evening"]) {
+    const pool = scored.filter(r => r.block === block)
+      .sort((a,b) => (b.score - a.score) || (a.i - b.i));
+    if (pool.length) trip.push(pool[0]);
+  }
+  return trip;
+}
+function blockLabel(b){ return {morning:"☀️ Morning", afternoon:"🌤️ Afternoon", evening:"🌙 Evening"}[b]; }
+function kindLabel(k){ return {dining:"🍽️ Dining", culture:"🏛️ Culture", nightlife:"🍸 Nightlife", shopping:"🛍️ Shopping"}[k] || k; }
+function blockHTML(r, generic){
+  return `<div class="block">
+    <div class="when">${blockLabel(r.block)}</div>
+    <div class="place">${r.name}</div>
+    <div class="meta">${kindLabel(r.kind)}</div>
+    <div class="why"><b>Why this fits:</b> ${r.why}</div>
+    ${r.entity ? `<span class="entity">Qloo entity · ${r.entity}</span>` : ""}
+  </div>`;
+}
+function panelHTML(title, sub, trip, cls){
+  return `<div class="panel ${cls}"><div class="panel-head">${title}<small>${sub}</small></div>${trip.map(r => blockHTML(r)).join("")}</div>`;
+}
+function dnaHTML(label, tags){
+  if (!tags.length) return "";
+  return `<div class="dna"><span class="lbl">${label}</span>${tags.map(t => `<span>#${t}</span>`).join("")}</div>`;
+}
+
+/* ---------- GENERATE ---------- */
+async function generate(){
+  const city = CITIES.find(c => c.id === cityId);
+  if (!city) return;
+  $("#generate").textContent = "Building your trip…";
+  let profiles;
+  if (mode === "compare") {
+    const pa = PRESETS[$("#profile-a").value], pb = PRESETS[$("#profile-b").value];
+    profiles = [
+      {label:`Profile A · ${pa.label}`, tags: tagsForProfile(pa.favs), trip: buildTrip(cityId, tagsForProfile(pa.favs))},
+      {label:`Profile B · ${pb.label}`, tags: tagsForProfile(pb.favs), trip: buildTrip(cityId, tagsForProfile(pb.favs))},
+    ];
+  } else {
+    const tags = tagsForProfile([...selected]);
+    let trip = buildTrip(cityId, tags);
+    // LIVE mode: try Qloo, enrich on success; always fall back to demo data.
+    const key = localStorage.getItem("tastepassport_qloo_key");
+    if (key) {
+      try {
+        const live = await qlooEnrich(city, tags);
+        if (live && live.length) trip = live;
+      } catch(e) { /* silent fallback to demo data */ }
+    }
+    profiles = [{label:"Your taste trip", tags, trip}];
+  }
+  lastResult = {city, profiles, generic: GENERIC[cityId]};
+  renderResults();
+  $("#generate").textContent = mode === "compare" ? "Compare two trips →" : "Generate my 1-day trip →";
+}
+function renderResults(){
+  const {city, profiles, generic} = lastResult;
+  $("#results").classList.remove("hidden");
+  $("#results-title").textContent = `One day in ${city.name}`;
+  $("#results-sub").textContent = mode === "compare"
+    ? "Same city, two tastes — the itinerary changes because the traveler does."
+    : "Same city, two trips — the generic one ignores who you are.";
+  $("#dna-wrap").innerHTML = profiles.map(p => dnaHTML(p.label + " · Taste DNA", p.tags)).join("");
+  if (mode === "compare") {
+    $("#compare-grid").innerHTML =
+      panelHTML("🅰️ " + profiles[0].label, "Taste-grounded trip", profiles[0].trip, "profileA") +
+      panelHTML("🅱️ " + profiles[1].label, "Taste-grounded trip", profiles[1].trip, "profileB");
+  } else {
+    $("#compare-grid").innerHTML =
+      panelHTML("😐 Generic tourist trip", "Same for everyone, every time", generic, "generic") +
+      panelHTML("✨ " + profiles[0].label, "Grounded in your taste graph", profiles[0].trip, "taste");
+  }
+  $("#results").scrollIntoView({behavior:"smooth", block:"start"});
+}
+$("#generate").onclick = generate;
+$("#regen-btn").onclick = generate;
+
+/* ---------- COPY ---------- */
+$("#copy-btn").onclick = async () => {
+  if (!lastResult) return;
+  const {city, profiles, generic} = lastResult;
+  let txt = `TASTEPASSPORT — One day in ${city.name}\n\n`;
+  profiles.forEach(p => {
+    txt += `${p.label} (taste tags: ${p.tags.join(", ")})\n`;
+    p.trip.forEach(r => txt += `- ${blockLabel(r.block)}: ${r.name} (${kindLabel(r.kind)}) — ${r.why}\n`);
+    txt += "\n";
+  });
+  if (mode === "single") {
+    txt += `Generic tourist trip:\n`;
+    generic.forEach(r => txt += `- ${blockLabel(r.block)}: ${r.name} — ${r.why}\n`);
+  }
+  txt += "\nMade with TastePassport — same city, different trip.";
+  try { await navigator.clipboard.writeText(txt); toast("Itinerary copied 📋"); }
+  catch(e) {
+    const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove(); toast("Itinerary copied 📋");
+  }
+};
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.remove("hidden");
+  setTimeout(() => t.classList.add("hidden"), 2200);
+}
+
+/* ---------- QLOO LIVE MODE ---------- */
+function refreshKeyUI(){
+  const has = !!localStorage.getItem("tastepassport_qloo_key");
+  $("#key-status").textContent = has ? "Key saved in this browser ✓" : "No key — running in DEMO mode";
+  $("#data-badge").textContent = has ? "LIVE MODE · Qloo connected" : "DEMO DATA · no key needed";
+  $("#data-badge").classList.toggle("live", has);
+  if (has) $("#api-key").value = "••••••••••••";
+}
+$("#save-key").onclick = () => {
+  const v = $("#api-key").value.trim();
+  if (!v || v === "••••••••••••") { toast("Paste a Qloo API key first"); return; }
+  localStorage.setItem("tastepassport_qloo_key", v);
+  refreshKeyUI(); toast("Key saved locally 🔑");
+};
+$("#clear-key").onclick = () => {
+  localStorage.removeItem("tastepassport_qloo_key");
+  $("#api-key").value = ""; refreshKeyUI(); toast("Key cleared — back to DEMO mode");
+};
+async function qlooEnrich(city, tags){
+  const key = localStorage.getItem("tastepassport_qloo_key");
+  const base = "https://hackathon.api.qloo.com/v2/insights";
+  const types = ["urn:entity:place","urn:entity:movie","urn:entity:artist","urn:entity:brand"];
+  const out = [];
+  for (const t of types) {
+    const url = new URL(base);
+    url.searchParams.set("filter.type", t);
+    url.searchParams.set("filter.location.query", city.name);
+    url.searchParams.set("filter.rating.min", "0.6");
+    url.searchParams.set("take", "3");
+    const res = await fetch(url.toString(), {headers: {"X-Api-Key": key, "Accept": "application/json"}});
+    if (!res.ok) throw new Error("Qloo " + res.status);
+    const data = await res.json();
+    (data.results?.entities || []).forEach(e => {
+      const name = e.name || e.title || "Qloo pick";
+      const entity = (t.split(":").pop() || "place");
+      out.push({name, kind: entity === "place" ? "culture" : "culture",
+        block: out.length % 3 === 0 ? "morning" : out.length % 3 === 1 ? "afternoon" : "evening",
+        tags, why: `Qloo matched this ${entity} to your taste graph for ${city.name}.`, entity});
+    });
+  }
+  // Re-shape into one per block if we got anything usable.
+  const trip = [];
+  for (const block of ["morning","afternoon","evening"]) {
+    const hit = out.find(o => o.block === block);
+    if (hit) trip.push(hit);
+  }
+  if (trip.length < 3) throw new Error("Qloo returned too few results");
+  return trip;
+}
+
+/* ---------- INIT ---------- */
+renderChips(); renderCities(); renderCompareSelects(); updateFavbar(); updateGenerate(); refreshKeyUI();
+</script>
+</body>
+</html>
