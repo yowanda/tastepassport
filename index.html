@@ -275,7 +275,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 let selected = new Set();           // favorite names (single mode)
 let mode = "single";
 let cityId = null;
-let lastResult = null;              // {city, profiles:[{label,tags,trip}], generic}
+let lastResult = null;              // {city, profiles:[{label,tags,trip}], generic, mode}
 const FAV_BY_NAME = {};
 FAVORITES.forEach(g => g.items.forEach(f => FAV_BY_NAME[f.name] = f));
 
@@ -384,19 +384,20 @@ async function generate(){
     }
     profiles = [{label:"Your taste trip", tags, trip}];
   }
-  lastResult = {city, profiles, generic: GENERIC[cityId]};
+  lastResult = {city, profiles, generic: GENERIC[cityId], mode};
   renderResults();
   $("#generate").textContent = mode === "compare" ? "Compare two trips →" : "Generate my 1-day trip →";
 }
 function renderResults(){
   const {city, profiles, generic} = lastResult;
+  const resultMode = lastResult.mode || mode;
   $("#results").classList.remove("hidden");
   $("#results-title").textContent = `One day in ${city.name}`;
-  $("#results-sub").textContent = mode === "compare"
+  $("#results-sub").textContent = resultMode === "compare"
     ? "Same city, two tastes — the itinerary changes because the traveler does."
     : "Same city, two trips — the generic one ignores who you are.";
   $("#dna-wrap").innerHTML = profiles.map(p => dnaHTML(p.label + " · Taste DNA", p.tags)).join("");
-  if (mode === "compare") {
+  if (resultMode === "compare") {
     $("#compare-grid").innerHTML =
       panelHTML("🅰️ " + profiles[0].label, "Taste-grounded trip", profiles[0].trip, "profileA") +
       panelHTML("🅱️ " + profiles[1].label, "Taste-grounded trip", profiles[1].trip, "profileB");
@@ -420,7 +421,7 @@ $("#copy-btn").onclick = async () => {
     p.trip.forEach(r => txt += `- ${blockLabel(r.block)}: ${r.name} (${kindLabel(r.kind)}) — ${r.why}\n`);
     txt += "\n";
   });
-  if (mode === "single") {
+  if (lastResult.mode === "single") {
     txt += `Generic tourist trip:\n`;
     generic.forEach(r => txt += `- ${blockLabel(r.block)}: ${r.name} — ${r.why}\n`);
   }

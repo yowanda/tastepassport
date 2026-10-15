@@ -1,0 +1,9 @@
+# Screenshots / local artifacts (never committed)
+cover.png
+*.log
+*.tmp
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*~
