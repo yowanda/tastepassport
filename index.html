@@ -9,11 +9,11 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
 a{color:inherit}
-header{max-width:1080px;margin:0 auto;padding:28px 20px 8px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+header{max-width:1080px;margin:0 auto;padding:28px 20px 8px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
 .logo{font-size:26px;font-weight:800;letter-spacing:-.5px}
 .logo span{color:var(--accent)}
 .tagline{color:var(--muted);font-size:14px;margin:4px 0 0;max-width:520px}
-.badge{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--card);white-space:nowrap}
+.badge{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--card);white-space:normal;text-align:center;max-width:100%;flex-shrink:1}
 .badge.live{border-color:var(--accent2);color:var(--accent2);font-weight:700}
 main{max-width:1080px;margin:0 auto;padding:12px 20px 60px}
 .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:16px 0}
@@ -360,11 +360,14 @@ function dnaHTML(label, tags){
 }
 
 /* ---------- GENERATE ---------- */
+let genSeq = 0; // only the latest generate() call may render (stale live fetches are dropped)
 async function generate(){
+  const mySeq = ++genSeq;
   const city = CITIES.find(c => c.id === cityId);
   if (!city) return;
   $("#generate").textContent = "Building your trip…";
   let profiles;
+  let usedLive = false;
   if (mode === "compare") {
     const pa = PRESETS[$("#profile-a").value], pb = PRESETS[$("#profile-b").value];
     profiles = [
@@ -379,12 +382,13 @@ async function generate(){
     if (key) {
       try {
         const live = await qlooEnrich(city, tags);
-        if (live && live.length) trip = live;
+        if (live && live.length) { trip = live; usedLive = true; }
       } catch(e) { /* silent fallback to demo data */ }
     }
     profiles = [{label:"Your taste trip", tags, trip}];
   }
-  lastResult = {city, profiles, generic: GENERIC[cityId], mode};
+  if (mySeq !== genSeq) return; // a newer generate started — drop this stale result
+  lastResult = {city, profiles, generic: GENERIC[cityId], mode, liveUsed: usedLive};
   renderResults();
   $("#generate").textContent = mode === "compare" ? "Compare two trips →" : "Generate my 1-day trip →";
 }
@@ -397,6 +401,12 @@ function renderResults(){
     ? "Same city, two tastes — the itinerary changes because the traveler does."
     : "Same city, two trips — the generic one ignores who you are.";
   $("#dna-wrap").innerHTML = profiles.map(p => dnaHTML(p.label + " · Taste DNA", p.tags)).join("");
+  // Data-source badge must reflect what is actually shown, not just whether a key exists.
+  const keyNow = localStorage.getItem("tastepassport_qloo_key");
+  const badge = $("#data-badge");
+  if (lastResult.liveUsed) { badge.textContent = "LIVE MODE · Qloo data"; badge.classList.add("live"); }
+  else if (keyNow) { badge.textContent = "DEMO DATA · Qloo unreachable, showing demo"; badge.classList.remove("live"); }
+  else { badge.textContent = "DEMO DATA · no key needed"; badge.classList.remove("live"); }
   if (resultMode === "compare") {
     $("#compare-grid").innerHTML =
       panelHTML("🅰️ " + profiles[0].label, "Taste-grounded trip", profiles[0].trip, "profileA") +
@@ -441,7 +451,7 @@ function toast(msg){
 function refreshKeyUI(){
   const has = !!localStorage.getItem("tastepassport_qloo_key");
   $("#key-status").textContent = has ? "Key saved in this browser ✓" : "No key — running in DEMO mode";
-  $("#data-badge").textContent = has ? "LIVE MODE · Qloo connected" : "DEMO DATA · no key needed";
+  $("#data-badge").textContent = has ? "LIVE MODE · key saved" : "DEMO DATA · no key needed";
   $("#data-badge").classList.toggle("live", has);
   if (has) $("#api-key").value = "••••••••••••";
 }
@@ -466,8 +476,12 @@ async function qlooEnrich(city, tags){
     url.searchParams.set("filter.location.query", city.name);
     url.searchParams.set("filter.rating.min", "0.6");
     url.searchParams.set("take", "3");
-    const res = await fetch(url.toString(), {headers: {"X-Api-Key": key, "Accept": "application/json"}});
-    if (!res.ok) throw new Error("Qloo " + res.status);
+    // 10s timeout per request: a hung Qloo call must never freeze the UI.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
+    try {
+      const res = await fetch(url.toString(), {headers: {"X-Api-Key": key, "Accept": "application/json"}, signal: ctrl.signal});
+      if (!res.ok) throw new Error("Qloo " + res.status);
     const data = await res.json();
     (data.results?.entities || []).forEach(e => {
       const name = e.name || e.title || "Qloo pick";
@@ -476,6 +490,7 @@ async function qlooEnrich(city, tags){
         block: out.length % 3 === 0 ? "morning" : out.length % 3 === 1 ? "afternoon" : "evening",
         tags, why: `Qloo matched this ${entity} to your taste graph for ${city.name}.`, entity});
     });
+    } finally { clearTimeout(timer); }
   }
   // Re-shape into one per block if we got anything usable.
   const trip = [];
