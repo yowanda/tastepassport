@@ -5,84 +5,104 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TastePassport — Same city. Different trip.</title>
 <style>
-:root{--ink:#1a1611;--muted:#6b6259;--paper:#faf6ef;--card:#fff;--line:#e8ddcd;--accent:#e8542f;--accent2:#0e7c6b;--gold:#c99a2b;--soft:#f3ecdf;--radius:16px}
+:root{
+  --ink:#1f2937; --muted:#5b6472; --paper:#f6f7f6; --card:#fff; --soft:#eef2f1; --line:#e2e6e5;
+  --accent:#0f766e; --accent-dark:#0b5e57; --accent-soft:#e6f2f0;
+  --r-sm:8px; --r-md:10px; --r-lg:14px;
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 6px 16px rgba(15,23,42,.04);
+  --font-display:Georgia,"Times New Roman",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
+body{margin:0;font-family:var(--font-body);background:var(--paper);color:var(--ink);line-height:1.5;font-size:15px}
 a{color:inherit}
-header{max-width:1080px;margin:0 auto;padding:28px 20px 8px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-.logo{font-size:26px;font-weight:800;letter-spacing:-.5px}
+*:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button,select,input{font-family:inherit}
+button,select,.chip,.city{transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease}
+header{max-width:1140px;margin:0 auto;padding:20px 20px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.logo{font-family:var(--font-display);font-size:27px;font-weight:700;letter-spacing:-.3px;line-height:1.2}
 .logo span{color:var(--accent)}
-.tagline{color:var(--muted);font-size:14px;margin:4px 0 0;max-width:520px}
+.tagline{color:var(--muted);font-size:14px;margin:4px 0 0;max-width:560px}
 .badge{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--card);white-space:normal;text-align:center;max-width:100%;flex-shrink:1}
-.badge.live{border-color:var(--accent2);color:var(--accent2);font-weight:700}
-main{max-width:1080px;margin:0 auto;padding:12px 20px 60px}
-.step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:16px 0}
-.step h2{margin:0 0 4px;font-size:18px}
-.step p.hint{margin:0 0 14px;color:var(--muted);font-size:13px}
-.mode-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.mode-btn{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer}
+.badge.live{border-color:var(--accent);color:var(--accent-dark);font-weight:700}
+main{max-width:1140px;margin:0 auto;padding:8px 20px 48px}
+.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:1023px){.layout{grid-template-columns:1fr}}
+.controls{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media(min-width:1024px){.controls{position:sticky;top:16px}}
+.results-col{min-width:0}
+.step{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow)}
+.step h2{margin:0 0 2px;font-size:16px;font-weight:700}
+.step p.hint{margin:0 0 12px;color:var(--muted);font-size:13px}
+.mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.mode-btn{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;min-height:44px;font-size:13.5px;font-weight:600;cursor:pointer}
 .mode-btn.on{border-color:var(--ink);background:var(--ink);color:#fff}
-.chip-group{margin:12px 0}
-.chip-group h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 8px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1.5px solid var(--line);background:var(--soft);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;transition:.15s}
-.chip:hover{border-color:var(--ink)}
+.chip-group{margin:10px 0}
+.chip-group:first-child{margin-top:0}
+.chip-group h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
 .chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.preset{border:1px dashed var(--gold);background:#fffaf0;border-radius:10px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:600}
-.preset:hover{background:#fff2d6}
-.favbar{margin-top:12px;font-size:14px}
-.favbar b{color:var(--accent)}
-.cities{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-@media(max-width:640px){.cities{grid-template-columns:repeat(2,1fr)}}
-.city{border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;background:var(--card);text-align:left;transition:.15s}
-.city:hover{border-color:var(--ink)}
-.city.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,84,47,.15)}
-.city .emoji{font-size:28px}
-.city .name{font-weight:700;font-size:16px;margin-top:6px}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.preset{border:1px dashed #cbd5e1;background:#f8fafc;border-radius:var(--r-sm);padding:6px 10px;min-height:44px;display:inline-flex;align-items:center;font-size:12.5px;cursor:pointer;font-weight:600;color:var(--ink)}
+.preset:hover{background:#eef2f1;border-color:var(--accent)}
+.favbar{margin-top:10px;font-size:13.5px}
+.favbar b{color:var(--accent-dark)}
+.cities{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.city{border:1.5px solid var(--line);border-radius:var(--r-md);padding:12px;cursor:pointer;background:var(--card);text-align:left;min-height:44px}
+.city:hover{border-color:var(--accent)}
+.city.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,118,110,.15)}
+.city .emoji{font-size:22px;line-height:1}
+.city .name{font-weight:700;font-size:15px;margin-top:6px}
 .city .sub{font-size:12px;color:var(--muted)}
-.generate{width:100%;margin:20px 0 4px;padding:16px;border:0;border-radius:14px;background:var(--ink);color:#fff;font-size:17px;font-weight:700;cursor:pointer}
-.generate:hover{background:var(--accent)}
+.generate{width:100%;padding:13px 16px;min-height:48px;border:0;border-radius:var(--r-md);background:var(--ink);color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+.generate:hover{background:var(--accent-dark)}
 .generate:disabled{opacity:.45;cursor:not-allowed}
-.dna{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
-.dna span{background:#1a1611;color:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600}
-.dna .lbl{background:none;color:var(--muted);padding:5px 0;font-weight:400}
-.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.empty-state{border:1.5px dashed var(--line);border-radius:var(--r-lg);background:var(--card);padding:28px 20px;text-align:center;box-shadow:var(--shadow)}
+.empty-title{font-family:var(--font-display);font-size:18px;font-weight:700;margin:0 0 6px}
+.empty-state p{margin:0 auto;color:var(--muted);font-size:14px;max-width:480px}
+#results-title{font-family:var(--font-display);font-size:22px;margin:0 0 4px}
+#results-sub{color:var(--muted);margin:0 0 10px;font-size:14px}
+.dna{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.dna span{background:var(--accent-soft);color:var(--accent-dark);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600}
+.dna .lbl{background:none;color:var(--muted);padding:4px 0;font-weight:600}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:720px){.compare-grid{grid-template-columns:1fr}}
-.panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);overflow:hidden}
+.panel{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--card);overflow:hidden;box-shadow:var(--shadow)}
 .panel.generic{opacity:.92}
-.panel-head{padding:14px 16px;font-weight:800;font-size:15px;border-bottom:1px solid var(--line)}
+.panel-head{padding:12px 14px;font-weight:700;font-size:14.5px;border-bottom:1px solid var(--line)}
 .panel-head small{display:block;font-weight:400;color:var(--muted);font-size:12px}
-.panel.taste .panel-head{background:#fff3ee;border-bottom-color:#f2c9b8}
+.panel.taste .panel-head{background:var(--accent-soft);border-bottom-color:#cfe3e0}
 .panel.generic .panel-head{background:#f4f1ea}
 .panel.profileA .panel-head{background:#eef6f2;border-bottom-color:#c9e2d8}
 .panel.profileB .panel-head{background:#f3eef9;border-bottom-color:#ddd0ec}
-.block{padding:14px 16px;border-bottom:1px solid var(--line)}
+.block{padding:12px 14px;border-bottom:1px solid var(--line)}
 .block:last-child{border-bottom:0}
-.block .when{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700}
-.block .place{font-size:16px;font-weight:700;margin:2px 0}
+.block .when{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700}
+.block .place{font-size:15.5px;font-weight:700;margin:2px 0}
 .block .meta{font-size:12px;color:var(--muted)}
-.block .why{font-size:13.5px;margin-top:6px;background:var(--soft);border-left:3px solid var(--accent);padding:8px 10px;border-radius:0 8px 8px 0}
-.block .why b{color:var(--accent)}
-.entity{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;background:#eef1f5;color:#3d4a5c;margin-top:6px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.btn{border:1.5px solid var(--ink);background:var(--card);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer}
-.btn.primary{background:var(--accent2);border-color:var(--accent2);color:#fff}
-.btn:hover{opacity:.9}
-.compare-profiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+.block .why{font-size:13px;margin-top:6px;background:var(--accent-soft);border-left:3px solid var(--accent);padding:7px 10px;border-radius:0 var(--r-sm) var(--r-sm) 0}
+.block .why b{color:var(--accent-dark)}
+.entity{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;background:#e8ecef;color:#3d4a5c;margin-top:6px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{border:1.5px solid var(--ink);background:var(--card);border-radius:var(--r-md);padding:10px 16px;min-height:44px;display:inline-flex;align-items:center;font-size:13.5px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:hover{filter:brightness(.96)}
+.compare-profiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
 @media(max-width:640px){.compare-profiles{grid-template-columns:1fr}}
-.cmp-box{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--soft)}
-.cmp-box label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
-.cmp-box select{width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1px solid var(--line);font-size:14px;background:#fff}
-.settings{margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
+.cmp-box{border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px;background:var(--soft)}
+.cmp-box label{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.cmp-box select{width:100%;margin-top:6px;padding:10px;min-height:44px;border-radius:var(--r-sm);border:1px solid var(--line);font-size:14px;background:#fff}
+.settings{margin-top:24px;border-top:1px solid var(--line);padding-top:16px}
 .settings h3{margin:0 0 6px;font-size:15px}
 .settings p{margin:0 0 10px;color:var(--muted);font-size:13px}
-.settings input{width:100%;max-width:520px;padding:11px;border:1.5px solid var(--line);border-radius:10px;font-size:14px}
+.settings input{width:100%;max-width:520px;padding:10px 12px;min-height:44px;border:1.5px solid var(--line);border-radius:var(--r-md);font-size:14px}
 .settings .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
 .note{font-size:12.5px;color:var(--muted);margin-top:14px}
 .hidden{display:none!important}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;z-index:99}
-footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:12.5px}
+footer{max-width:1140px;margin:0 auto;padding:0 20px 32px;color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
@@ -94,6 +114,8 @@ footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
   <span class="badge" id="data-badge">DEMO DATA · no key needed</span>
 </header>
 <main>
+  <div class="layout">
+  <div class="controls">
   <section class="step" id="step1">
     <h2>Step 1 — Your taste</h2>
     <p class="hint">Tap 3–5 favorites. One tap on a preset works too.</p>
@@ -128,10 +150,12 @@ footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
   </section>
 
   <button class="generate" id="generate" type="button" disabled>Generate my 1-day trip →</button>
-
+  </div>
+  <div class="results-col">
+  <div id="results-empty" class="empty-state"><div class="empty-title">Your itinerary appears here</div><p>Pick 3–5 favorites and a city, then generate. The generic trip and your taste-grounded trip will appear side by side.</p></div>
   <section id="results" class="hidden">
-    <h2 id="results-title" style="font-size:20px;margin:26px 0 4px"></h2>
-    <p id="results-sub" style="color:var(--muted);margin:0 0 6px;font-size:14px"></p>
+    <h2 id="results-title"></h2>
+    <p id="results-sub"></p>
     <div id="dna-wrap"></div>
     <div class="compare-grid" id="compare-grid"></div>
     <div class="actions">
@@ -139,6 +163,8 @@ footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
       <button class="btn" id="regen-btn" type="button">↻ Regenerate</button>
     </div>
   </section>
+  </div>
+  </div>
 
   <section class="settings">
     <h3>🔑 Qloo LIVE mode (optional)</h3>
@@ -365,7 +391,10 @@ async function generate(){
   const mySeq = ++genSeq;
   const city = CITIES.find(c => c.id === cityId);
   if (!city) return;
-  $("#generate").textContent = "Building your trip…";
+  const genBtn = $("#generate");
+  genBtn.disabled = true;
+  genBtn.setAttribute("aria-busy", "true");
+  genBtn.textContent = "Building your trip…";
   let profiles;
   let usedLive = false;
   if (mode === "compare") {
@@ -390,12 +419,14 @@ async function generate(){
   if (mySeq !== genSeq) return; // a newer generate started — drop this stale result
   lastResult = {city, profiles, generic: GENERIC[cityId], mode, liveUsed: usedLive};
   renderResults();
-  $("#generate").textContent = mode === "compare" ? "Compare two trips →" : "Generate my 1-day trip →";
+  genBtn.removeAttribute("aria-busy");
+  updateGenerate();
 }
 function renderResults(){
   const {city, profiles, generic} = lastResult;
   const resultMode = lastResult.mode || mode;
   $("#results").classList.remove("hidden");
+  $("#results-empty").classList.add("hidden");
   $("#results-title").textContent = `One day in ${city.name}`;
   $("#results-sub").textContent = resultMode === "compare"
     ? "Same city, two tastes — the itinerary changes because the traveler does."
@@ -438,8 +469,11 @@ $("#copy-btn").onclick = async () => {
   txt += "\nMade with TastePassport — same city, different trip.";
   try { await navigator.clipboard.writeText(txt); toast("Itinerary copied 📋"); }
   catch(e) {
-    const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta);
-    ta.select(); document.execCommand("copy"); ta.remove(); toast("Itinerary copied 📋");
+    try {
+      const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta);
+      ta.select(); const ok = document.execCommand("copy"); ta.remove();
+      toast(ok ? "Itinerary copied 📋" : "Copy failed — please select the text manually");
+    } catch(e2) { toast("Copy failed — please select the text manually"); }
   }
 };
 function toast(msg){
